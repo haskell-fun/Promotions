@@ -1,0 +1,14 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "promotions:lib"
+
+    - path: "./app/Main.hs"
+      component: "promotions:exe:promotions-exe"
+
+    - path: "./app/Paths_haskell_toy_example.hs"
+      component: "promotions:exe:promotions-exe"
+
+    - path: "./test"
+      component: "promotions:test:promotions-test"
+

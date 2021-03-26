@@ -1,62 +1,58 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 
 module Promotions where
 
+import Data.Aeson (FromJSON, ToJSON, Value (String), toJSON)
+import Data.Aeson.Types (Value)
 import qualified Data.Set as S
-import Data.Semigroup
-import Data.Monoid
+import Data.Time (UTCTime)
+import GHC.Generics (Generic)
 
-data ProductId = ProductId String deriving (Eq, Show)
-data Price = Price Double deriving (Eq, Show)
-data SellerId = SellerId String deriving (Eq, Show)
-data CartItemId = CartItemId String deriving (Eq, Show)
-data ShippingCost = ShippingCost Double deriving (Eq, Show)
+data Campaign = FreeShippingCampaign
+  { startDate :: UTCTime,
+    endDate :: UTCTime,
+    minTotalPrice :: Money
+  }
+  deriving (Eq, Show)
 
-data Item = Item {
-  id :: ProductId,
-  price :: Price,
-  sellerId :: SellerId
-} deriving (Eq, Show)
+data Promotion = FreeShipping deriving (Eq, Show, Generic)
 
-data CartItem = CartItem CartItemId Item deriving (Eq, Show)
+instance ToJSON Promotion where
+  toJSON FreeShipping = String "free_shipping"
 
-data Cart = Cart [CartItem] ShippingCost deriving (Eq, Show)
+newtype Money = Money Double
+  deriving (Eq, Show)
+  deriving (FromJSON, Ord) via Double
 
-data Promotion = FreeProduct CartItemId | FreeShipping | PercentageOff CartItemId Double | TotalDiscount Price
+newtype Quantity = Quantity Int
+  deriving (Eq, Show)
+  deriving (FromJSON) via Int
 
-data Campaign = Campaign | NoOpCampaign
+newtype ProductId = ProductId Int
+  deriving (Eq, Show)
+  deriving (FromJSON) via Int
 
-f2 :: Cart -> [Campaign] -> S.Set Promotion
-f2 cart = (foldr (<>) S.empty) . (fmap (f cart))
+data CartItem = CartItem
+  { productId :: ProductId,
+    quantity :: Quantity
+  }
+  deriving (Eq, Show, Generic)
 
-f :: Cart -> Campaign -> S.Set Promotion
-f _ _ = S.empty -- just so it builds
+instance FromJSON CartItem
 
-bestCampaign :: Campaign -> Campaign -> Campaign
-bestCampaign c1 _ = c1 -- just so it builds
+data PromotionRequest = PromotionRequest
+  { shippingCost :: Money,
+    totalPrice :: Money,
+    items :: [CartItem]
+  }
+  deriving (Eq, Show, Generic)
 
-class Equality a where
-  isEqual :: a -> a -> Bool
+data PromotionResponse = PromotionResponse
+  { promotions :: S.Set Promotion
+  }
+  deriving (Eq, Show, Generic)
 
-class (Eq a) => Equality a where
-  isEqual x y = x == y
+instance FromJSON PromotionRequest
 
--- instance Equality Bool where
---   isEqual :: Bool -> Bool -> Bool
---   isEqual True True = True
---   isEqual False False = True
---   isEqual _ _ = False
-
--- instance Monoid SumInt where
---   mempty = SumInt 0
---
--- instance Monoid ProductInt where
---   mempty = ProductInt 1
---
--- instance Semigroup SumInt where
---   (SumInt a) <> (SumInt b) = SumInt (a + b)
-
--- instance Semigroup ProductInt where
---   (ProductInt a) <> (ProductInt b) = ProductInt (a * b)
-
--- data SumInt = SumInt Int
--- data ProductInt = ProductInt Int deriving (Semigroup, Monoid) via Int
+instance ToJSON PromotionResponse

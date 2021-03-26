@@ -10,7 +10,9 @@ dependencies:
 - aeson
 - generic-aeson
 - wai
+- wai-extra
 - warp
+- time  
 
 default-extensions:
 - OverloadedStrings

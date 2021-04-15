@@ -1,6 +1,6 @@
 module LibSpec where
 
-import Lib (app)
+import Lib (application)
 import Test.Hspec (Spec, describe, it, shouldBe)
 import Test.Hspec.QuickCheck (prop)
 import Test.Hspec.Wai (get, shouldRespondWith, with)
@@ -14,11 +14,11 @@ spec = describe "Simple test" $ do
   prop "property-based unit test" $
     \l -> reverse (reverse l) == (l :: [Int])
 
-  with (return app) $ do
+  with (return application) $ do
     describe "GET /status" $ do
       it "responds with 200" $ do
         get "/status" `shouldRespondWith` 200
 
       it "responds with ok status" $ do
-        let response = "{\"status\":\"ok\"}"
+        let response = "{\"healthy\":\"ok\"}"
         get "/status" `shouldRespondWith` response
